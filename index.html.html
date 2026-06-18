@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BUD2 English AI Coach v2 Free</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #e3f2fd, #e8f5e9, #fffde7);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 850px;
+      height: 92vh;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 16px 45px rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #0d47a1, #2e7d32);
+      color: #fff;
+      padding: 20px;
+      text-align: center;
+    }
+    .header h1 { margin: 0; font-size: 27px; }
+    .header p { margin: 7px 0 0; font-size: 14px; opacity: .95; }
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: rgba(255,255,255,.18);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    .quick-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px;
+      background: #f5f7fa;
+      border-bottom: 1px solid #ddd;
+    }
+    .quick-buttons button {
+      border: none;
+      background: #e3f2fd;
+      color: #0d47a1;
+      padding: 9px 12px;
+      border-radius: 18px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: .2s;
+    }
+    .quick-buttons button:hover { background: #bbdefb; transform: translateY(-1px); }
+    .chat-box {
+      flex: 1;
+      padding: 18px;
+      overflow-y: auto;
+      background: #fafafa;
+    }
+    .message {
+      max-width: 86%;
+      padding: 13px 16px;
+      margin-bottom: 12px;
+      border-radius: 17px;
+      line-height: 1.45;
+      font-size: 15px;
+      white-space: pre-line;
+    }
+    .bot {
+      background: #e8f5e9;
+      color: #1b5e20;
+      border-bottom-left-radius: 5px;
+    }
+    .user {
+      background: #e3f2fd;
+      color: #0d47a1;
+      margin-left: auto;
+      border-bottom-right-radius: 5px;
+    }
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 15px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+    input {
+      flex: 1;
+      padding: 14px;
+      border: 1px solid #bbb;
+      border-radius: 25px;
+      font-size: 15px;
+      outline: none;
+    }
+    button.send {
+      background: #1565c0;
+      color: white;
+      border: none;
+      padding: 0 23px;
+      border-radius: 25px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    button.send:hover { background: #0d47a1; }
+    .footer-note {
+      font-size: 11px;
+      text-align: center;
+      color: #666;
+      padding: 8px;
+      background: #f8f8f8;
+    }
+    @media (max-width: 600px) {
+      .chat-container { height: 95vh; }
+      .header h1 { font-size: 21px; }
+      .message { max-width: 95%; font-size: 14px; }
+      button.send { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="header">
+      <h1>📘 BUD2 English AI Coach v2</h1>
+      <p>English Learning Assistant | Grammar • Writing • Vocabulary • SPM Support</p>
+      <div class="badge">Free Plan Version | Developed by Cikgu Vinothan</div>
+    </div>
+
+    <div class="quick-buttons">
+      <button onclick="quickAsk('How to write a formal email for SPM?')">Formal Email</button>
+      <button onclick="quickAsk('Teach me tenses')">Tenses</button>
+      <button onclick="quickAsk('Give me SPM essay introduction examples')">Essay Intro</button>
+      <button onclick="quickAsk('Correct this sentence: I am go to school yesterday')">Grammar Fix</button>
+      <button onclick="quickAsk('Give me environment vocabulary')">Vocabulary</button>
+      <button onclick="quickAsk('Give me speaking practice')">Speaking</button>
+      <button onclick="quickAsk('How to write an article?')">Article</button>
+      <button onclick="quickAsk('How to write a report?')">Report</button>
+    </div>
+
+    <div class="chat-box" id="chatBox">
+      <div class="message bot">Hello students! 👋
+
+I am BUD2 English AI Coach v2.
+
+You can ask about:
+✅ SPM writing
+✅ Formal email
+✅ Article, report, speech & review
+✅ Grammar and tenses
+✅ Vocabulary
+✅ Sentence correction
+✅ Speaking practice
+✅ Reading comprehension tips
+
+Type your question below.</div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Ask your English question here..." onkeydown="handleKey(event)">
+      <button class="send" onclick="sendMessage()">Send</button>
+    </div>
+
+    <div class="footer-note">
+      Free version: Works without paid API. It uses built-in educational responses and basic grammar rules.
+    </div>
+  </div>
+
+<script>
+const chatBox = document.getElementById("chatBox");
+const userInput = document.getElementById("userInput");
+
+function addMessage(text, sender) {
+  const msg = document.createElement("div");
+  msg.className = "message " + sender;
+  msg.textContent = text;
+  chatBox.appendChild(msg);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function handleKey(event) {
+  if (event.key === "Enter") sendMessage();
+}
+
+function quickAsk(question) {
+  userInput.value = question;
+  sendMessage();
+}
+
+function sendMessage() {
+  const text = userInput.value.trim();
+  if (!text) return;
+  addMessage(text, "user");
+  userInput.value = "";
+  setTimeout(() => addMessage(getBotReply(text), "bot"), 450);
+}
+
+function getBotReply(input) {
+  const q = input.toLowerCase();
+
+  if (q.includes("i am go")) {
+    return `Correction:
+❌ I am go to school yesterday.
+✅ I went to school yesterday.
+
+Reason:
+"Yesterday" shows past time, so use the past tense verb "went".`;
+  }
+
+  if (q.includes("she go")) {
+    return `Correction:
+❌ She go to school.
+✅ She goes to school.
+
+Reason:
+For he/she/it in simple present tense, add -s or -es to the verb.`;
+  }
+
+  if (q.includes("he have")) {
+    return `Correction:
+❌ He have a book.
+✅ He has a book.
+
+Reason:
+Use "has" with he, she, and it.`;
+  }
+
+  if (q.includes("formal email") || q.includes("email")) {
+    return `SPM Formal Email Format:
+
+Dear Sir/Madam,
+
+I am writing to...
+
+Firstly, ...
+Secondly, ...
+Furthermore, ...
+
+I hope you will consider my suggestion / request.
+
+Yours faithfully,
+[Your Name]
+
+Useful phrases:
+✅ I would like to suggest...
+✅ I am interested to know more about...
+✅ Thank you for your attention.
+✅ I look forward to your reply.`;
+  }
+
+  if (q.includes("informal email")) {
+    return `Informal Email Format:
+
+Hi [Name],
+
+How are you? I hope you are doing well.
+
+I want to tell you about...
+
+You should...
+I think it would be great if...
+
+That's all for now. Hope to hear from you soon.
+
+Your friend,
+[Your Name]`;
+  }
+
+  if (q.includes("article")) {
+    return `Article Writing Format:
+
+Title: A Healthy Lifestyle
+
+Introduction:
+A healthy lifestyle is important for everyone.
+
+Body:
+Firstly, we should eat balanced meals.
+Secondly, we should exercise regularly.
+Besides, we must get enough sleep.
+
+Conclusion:
+In conclusion, a healthy lifestyle helps us become happier and more active.`;
+  }
+
+  if (q.includes("report")) {
+    return `Report Writing Format:
+
+To: The Principal
+From: [Your Name]
+Subject: Report on English Language Week
+
+Introduction:
+This report is about...
+
+Details:
+The programme was held on...
+The activities included...
+The students participated actively.
+
+Recommendation:
+I suggest that...
+
+Reported by,
+[Your Name]`;
+  }
+
+  if (q.includes("speech")) {
+    return `Speech Format:
+
+Good morning to the principal, teachers and my fellow friends.
+
+Today, I would like to talk about...
+
+Firstly, ...
+Secondly, ...
+Lastly, ...
+
+In conclusion, ...
+
+Thank you for listening.`;
+  }
+
+  if (q.includes("review")) {
+    return `Review Writing Format:
+
+Title: Review of [Movie/Book/Product/Place]
+
+Introduction:
+I recently watched/read/visited...
+
+What I liked:
+The best part was...
+
+What can be improved:
+However, I think...
+
+Recommendation:
+I would recommend it to...
+
+Useful phrases:
+✅ It was interesting because...
+✅ The storyline was exciting.
+✅ I strongly recommend it.`;
+  }
+
+  if (q.includes("essay introduction") || q.includes("introduction")) {
+    return `SPM Essay Introduction Examples:
+
+1. General introduction:
+Nowadays, many people believe that...
+
+2. Problem-based introduction:
+In recent years, the issue of... has become more serious.
+
+3. Opinion introduction:
+In my opinion, I strongly believe that...
+
+Example:
+Nowadays, many students spend too much time on social media. This issue should be taken seriously because it affects their studies and health.`;
+  }
+
+  if (q.includes("conclusion")) {
+    return `Good conclusion phrases:
+
+✅ In conclusion, ...
+✅ To sum up, ...
+✅ Therefore, we should...
+✅ I strongly believe that...
+✅ Everyone has a role to play.
+
+Example:
+In conclusion, students should manage their time wisely to achieve success in their studies.`;
+  }
+
+  if (q.includes("linking") || q.includes("connector") || q.includes("connectors")) {
+    return `Useful linking words:
+
+To add points:
+✅ Firstly
+✅ Secondly
+✅ Furthermore
+✅ Moreover
+
+To show contrast:
+✅ However
+✅ On the other hand
+
+To show result:
+✅ Therefore
+✅ As a result
+
+To conclude:
+✅ In conclusion
+✅ To sum up`;
+  }
+
+  if (q.includes("tense") || q.includes("tenses") || q.includes("present tense") || q.includes("past tense") || q.includes("future tense")) {
+    return `Basic English Tenses:
+
+1. Simple Present:
+I go to school every day.
+She plays badminton.
+
+2. Simple Past:
+I went to school yesterday.
+She played badminton last week.
+
+3. Simple Future:
+I will study tonight.
+They will visit us tomorrow.
+
+Tip:
+Look for time words:
+✅ every day = present
+✅ yesterday = past
+✅ tomorrow = future`;
+  }
+
+  if (q.includes("grammar")) {
+    return `Basic grammar tips:
+
+1. Subject-verb agreement:
+✅ He goes
+✅ They go
+
+2. Past tense:
+✅ I went yesterday
+
+3. Articles:
+✅ a book
+✅ an apple
+✅ the sun
+
+4. Prepositions:
+✅ at school
+✅ in Malaysia
+✅ on Monday
+
+Type a sentence and I will try to help correct it.`;
+  }
+
+  if (q.includes("vocabulary") || q.includes("environment")) {
+    return `Environment Vocabulary:
+
+1. Pollution - pencemaran
+2. Recycling - kitar semula
+3. Deforestation - penebangan hutan
+4. Climate change - perubahan iklim
+5. Conservation - pemuliharaan
+6. Renewable energy - tenaga boleh diperbaharui
+7. Waste management - pengurusan sisa
+8. Global warming - pemanasan global
+
+Example:
+We should practise recycling to reduce pollution.`;
+  }
+
+  if (q.includes("technology") || q.includes("ai")) {
+    return `Technology Vocabulary:
+
+1. Artificial intelligence - kecerdasan buatan
+2. Digital learning - pembelajaran digital
+3. Innovation - inovasi
+4. Online platform - platform dalam talian
+5. Cyber safety - keselamatan siber
+6. Communication - komunikasi
+
+Example:
+Artificial intelligence can help students learn English more effectively.`;
+  }
+
+  if (q.includes("health")) {
+    return `Health Vocabulary:
+
+1. Balanced diet
+2. Exercise regularly
+3. Enough sleep
+4. Mental health
+5. Stress management
+6. Healthy lifestyle
+
+Example:
+Students should exercise regularly and eat a balanced diet to stay healthy.`;
+  }
+
+  if (q.includes("speaking")) {
+    return `Speaking Practice Formula:
+
+Answer + Reason + Example
+
+Question:
+What is your favourite subject?
+
+Answer:
+My favourite subject is English because it helps me communicate better. For example, I can speak confidently with my friends and teachers.`;
+  }
+
+  if (q.includes("reading comprehension") || q.includes("comprehension")) {
+    return `Reading Comprehension Tips:
+
+1. Read the question first.
+2. Underline keywords.
+3. Find the answer in the text.
+4. Use complete sentences.
+5. Do not copy too much if the question asks for your own words.`;
+  }
+
+  if (q.includes("guided writing") || q.includes("spm writing") || q.includes("spm")) {
+    return `SPM Guided Writing Tips:
+
+✅ Use all given points.
+✅ Write around 125–150 words.
+✅ Organise into 3 paragraphs.
+✅ Use linking words.
+✅ Check grammar.
+
+Simple structure:
+Paragraph 1: Introduction
+Paragraph 2: Main points
+Paragraph 3: Closing`;
+  }
+
+  if (q.includes("summary")) {
+    return `How to write a summary:
+
+1. Read the text carefully.
+2. Identify the main points.
+3. Remove examples and repeated ideas.
+4. Use your own words.
+5. Keep it short and clear.
+
+Useful beginning:
+The text is mainly about...`;
+  }
+
+  if (q.includes("help") || q.includes("what can you do")) {
+    return `I can help you with:
+
+✅ Formal email
+✅ Informal email
+✅ Article
+✅ Report
+✅ Speech
+✅ Review
+✅ Grammar
+✅ Tenses
+✅ Vocabulary
+✅ Speaking practice
+✅ Reading comprehension
+✅ SPM writing tips
+✅ Simple sentence correction`;
+  }
+
+  return `I am still a free built-in chatbot, so I may not answer every question like real ChatGPT.
+
+You can ask me about:
+✅ formal email
+✅ article
+✅ report
+✅ speech
+✅ review
+✅ grammar
+✅ tenses
+✅ vocabulary
+✅ SPM writing
+✅ speaking practice
+
+Try asking your question using simple keywords, for example:
+"Teach me past tense"
+"How to write a report?"
+"Give me vocabulary about health"`;
+}
+</script>
+</body>
+</html>
